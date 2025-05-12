@@ -20,7 +20,16 @@
     <a href="#about">About</a>
     <a href="#contact">Contact</a>
     <button class="dark-toggle" title="Toggle Dark Mode" onclick="toggleDarkMode()">🌙</button>
+  
+    <div class="menu-container">
+      <button id="menuToggle" class="dots-menu">⋮</button>
+      <div class="dropdown-menu" id="dropdownMenu">
+        <a href="login.html">Admin Login</a>
+      </div>
+    </div>
   </nav>
+  
+    
 
   <header>
     <h1>When Peace is a Stranger</h1>
@@ -67,7 +76,10 @@
           </div>
         </article>
 
-    
+    <!-- HARDCODED blog ends -->
+<div id="dynamic-posts"></div>
+<!-- About / Comment sections come below this -->
+
 
     <!-- Post Details -->
     <section id="post-detail">
@@ -127,7 +139,6 @@
     <p>&copy; May 02 2025. All rights reserved.</p>
   </footer>
   <!-- Your JS File -->
-  <script src="script.js"></script>
-  
+  <script type="module" src="script.js"></script>
 </body>
 </html>

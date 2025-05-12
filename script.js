@@ -1,42 +1,74 @@
-// Toggle dark mode and store preference
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { firebaseConfig } from './firebase-config.js';
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 function toggleDarkMode() {
   const isDark = document.body.classList.toggle("dark-mode");
   localStorage.setItem("theme", isDark ? "dark" : "light");
   document.querySelector(".dark-toggle").textContent = isDark ? "☀️" : "🌙";
 }
+window.toggleDarkMode = toggleDarkMode;
 
-// Initialize theme and other logic
-window.addEventListener("DOMContentLoaded", () => {
-  const isDark = localStorage.getItem("theme") === "dark";
-  if (isDark) {
-    document.body.classList.add("dark-mode");
+async function loadPosts() {
+  const postList = document.getElementById("post-list");
+  if (!postList) return;
+
+  const q = query(collection(db, "posts"), orderBy("createdAt", "asc"));
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach(doc => {
+    const { title, content, imageUrl } = doc.data();
+    const article = document.createElement("article");
+    article.classList.add("post-preview");
+    article.innerHTML = `
+  <div class="post-text">
+    <p class="large-text"><strong>${title}</strong></p>
+    <div class="large-text">${content}</div>
+  </div>
+  ${imageUrl
+    ? `<div class="post-img"><img src="${imageUrl}" alt="${title}" /></div>`
+    : ""
   }
-  document.querySelector(".dark-toggle").textContent = isDark ? "☀️" : "🌙";
-});
+`;
 
-// ✅ EmailJS send form handling
-
-// Initialize EmailJS with your public key
-(function () {
-    emailjs.init("OQLhFesJQWC7b5RkP");      // Replace with your EmailJS public key
-})();
-
-// Wait until the DOM is loaded
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("contactForm");
-
-  form.addEventListener("submit", function (e) {
-    e.preventDefault(); // Prevent page reload
-
-    // Send the form using EmailJS
-    emailjs.sendForm("service_vrpfqsl", "template_nsuwmh2", form)
-      .then(() => {
-        alert("✅ Message sent successfully!");
-        form.reset(); // Clear form
-      })
-      .catch((error) => {
-        console.error("EmailJS error:", error);
-        alert("❌ Failed to send message. Please try again.");
-      });
+    const dynamicSection = document.getElementById('dynamic-posts');
+    if (dynamicSection) {
+      dynamicSection.appendChild(article);
+    }
+    
   });
-});
+}
+async function init() {
+  document.addEventListener("DOMContentLoaded", () => {
+    const isDark = localStorage.getItem("theme") === "dark";
+    if (isDark) document.body.classList.add("dark-mode");
+    document.querySelector(".dark-toggle").textContent = isDark ? "☀️" : "🌙";
+
+    loadPosts();
+
+    const menuToggle = document.getElementById("menuToggle");
+    const dropdownMenu = document.getElementById("dropdownMenu");
+
+    if (menuToggle && dropdownMenu) {
+      menuToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdownMenu.style.display =
+          dropdownMenu.style.display === "block" ? "none" : "block";
+      });
+
+      document.addEventListener("click", (e) => {
+        if (
+          !dropdownMenu.contains(e.target) &&
+          !menuToggle.contains(e.target)
+        ) {
+          dropdownMenu.style.display = "none";
+        }
+      });
+    }
+  });
+}
+
+init();
